@@ -102,17 +102,25 @@ pacf(df2.census_group$diff)
 #' They're smaller than the effect of the MA lag 1, but would probably be best
 #' to do the following:
 #'
-#' 1. Regress census on day of week (model 1)
+#' 1. Regress *first difference* of daily census on day of week (model 1)
 #'
 #' 2. Take residuals from model 1
 #'
+
 #' 3. **Inference**: look at ACF/PACF of residuals. If they look like an MA
-#' process, this implies that there are no other explanatory variables.
-#'
-#' 4. **Prediction**: fit a MA 1 model to the residuals. The forecast for any
+#' process, this implies that there are no other explanatory variables. Census
+#' changes are "random" in the sense of an MA process.
+#' 
+
+#' 4. **Prediction**: fit a MA 1 model to the residuals. The forecast for the census *change* for any
 #' future day will be the sum of the fcast from the MA process and the
 #' day-of-week effect.
-#'
+#' 
+
+#' Okay, in practice, the process of fitting an AR or MA model on the
+#' differenced series and then integrating back to the series we care about will
+#' be handled by fitting an ARIMA model.
+#' 
 
 
 
