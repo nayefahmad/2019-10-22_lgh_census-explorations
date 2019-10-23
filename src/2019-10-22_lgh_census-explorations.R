@@ -1,6 +1,6 @@
 
 #'--- 
-#' title: "LGH Census explorations"
+#' title: "LGH Daily census - time series analysis"
 #' author: "Nayef Ahmad"
 #' date: "2019-10-22"
 #' output: 
@@ -35,7 +35,7 @@ site <- "LGH"
 n_unit <- "LGH 4 East"
 
 start_param <- "20180101"
-end_param <- "20191021"
+end_param <- "20191020"
 
 #' # Data 
 #' 
@@ -56,7 +56,13 @@ df2.census_group <-
   count(census_date_id) %>% 
   mutate(census_date = ymd(census_date_id), 
          diff = n - lag(n)) %>% 
-  drop_na()
+  fill_dates(census_date, 
+             ymd(start_param), 
+             ymd(end_param)) %>% 
+  replace_na(list(n = 0, 
+                  diff = 0)) %>% 
+  # remove last row (it will have NAs)
+  slice(1:n()-1)
 
 
 df2.census_group %>% 
