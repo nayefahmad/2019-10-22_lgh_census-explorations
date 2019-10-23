@@ -22,20 +22,30 @@ setup_denodo()
 
 #' # Overview
 #'
-#' Unlike ED visits data, census is likely to have correlated errors. So it's
-#' not a good idea to use classical normal-based regression. Instead, let's use
-#' time series methods.
+#' Unlike daily ED visits data, daily census count data is likely to have
+#' correlated errors. So it's not a good idea to use classical normal-based
+#' regression for inference or prediction. Instead, let's use time series
+#' methods.
 #' 
+
+#+ rest 
+#' # Parameters  
+#' 
+site <- "LGH"
+n_unit <- "LGH 4 East"
+
+start_param <- "20180101"
+end_param <- "20191021"
 
 #' # Data 
 #' 
 
-#+ rest 
+
 df1.census <- vw_census %>% 
-  filter(facility_short_name == "LGH", 
-         nursing_unit_desc_at_census == "LGH 4 East", 
-         census_date_id >= "20180101", 
-         census_date_id < "20191021") %>% 
+  filter(facility_short_name == glue::glue(site), 
+         nursing_unit_desc_at_census == glue::glue(n_unit), 
+         census_date_id >= start_param,  
+         census_date_id < end_param) %>% 
   select(patient_id, 
          census_date_id) %>% 
   collect
@@ -65,17 +75,26 @@ df2.census_group %>%
 acf(df2.census_group$diff)
 pacf(df2.census_group$diff)
 
-#' **Interpreting the ACF & PACF:**
+#' ## Interpreting the ACF & PACF 
 #' 
-#' #' From Shumway and Stoffer, p108:
+#' From [Shumway and Stoffer](http://db.ucsd.edu/static/TimeSeries.pdf), p108:
 #'
 #' ![](`r here::here("images", "acf-and-pacf.jpg") `)
 #'
 #' Also see examples
 #' [here](http://people.stat.sfu.ca/~lockhart/richard/804/06_1/lectures/IdentExamples/web.pdf).
 #'
+
+#' **Note:** the series must be stationary for the ACF/PACF to depend only on
+#' the lag. The differenced series does look pretty stationary, but I haven't
+#' actually tested for that.
 #' 
-#'
+
+#' \  
+#' \  
+#' 
+#' *Following notes are for LGH 4 East. They will not apply if you change those parameters.* 
+#' 
 #' Looks like this should be a MA model. The ACF pretty much cuts off after lag
 #' 1, while the PACF tails off.
 #'
@@ -99,3 +118,16 @@ pacf(df2.census_group$diff)
 
 #' # Models 
 #' 
+
+
+
+
+
+#' # Appendix
+#' ## Checks 
+#' 
+#' 
+num_days <- difftime(ymd(end_param),
+                     ymd(start_param)) %>% as.numeric()
+
+#' `r abs(num_days - nrow(df2.census_group)) <= 1`
